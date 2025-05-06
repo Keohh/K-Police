@@ -1,7 +1,6 @@
 -- Vehicle brake states tracked by vehicle network ID
 local brakeStates = {}
-
--- Local on-duty status cache
+local ox = exports.ox_lib
 local isOnDuty = false
 
 -- Request duty status when needed
@@ -22,12 +21,8 @@ end)
 -- Helper: check if vehicle is in config
 local function isTrackedVehicle(vehicle)
     if not DoesEntityExist(vehicle) then return false end
-    local model = GetEntityModel(vehicle)
-    local name = GetDisplayNameFromVehicleModel(model)
-    for _, v in ipairs(Config.Cars) do
-        if name == v then return true end
-    end
-    return false
+    local class = GetVehicleClass(vehicle)
+    return class == 18
 end
 
 -- Helper: notify player using Mythic Notify
@@ -63,7 +58,12 @@ RegisterCommand(Config.HandbrakeCommand, function()
     if not isTrackedVehicle(vehicle) then return end
 
     if not isOnDuty then
-        exports["mythic_notify"]:DoHudText("error", "You don't know how to shift the car.")
+        --exports["mythic_notify"]:DoHudText("error", "You don't know how to shift the car.")
+        lib.notify({
+            title = 'Uh-Oh!',
+            description = 'You don\'t know how to shift the car.',
+            type = 'error'
+        })
         return
     end
 

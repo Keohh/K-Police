@@ -2,7 +2,7 @@ local isOnDuty = false
 local vehicleBlips = {} -- [netId] = { blip, netId }
 local myTrackedVehicles = {}
 
-RegisterCommand("onduty", function()
+RegisterCommand("pduty", function()
     isOnDuty = not isOnDuty
     TriggerServerEvent("vblips:setDuty", isOnDuty)
     if isOnDuty then
@@ -12,7 +12,8 @@ RegisterCommand("onduty", function()
     end
     print("[vblips] On duty:", isOnDuty)
     print("[Handbrake] Access:", isOnDuty)
-    Notify(isOnDuty and "10-8 and Restocked" or "10-7. night shift has it from here")
+    print("[Garage] Access:", isOnDuty)
+    Notify(isOnDuty and "10-8 and Restocked" or "10-7. Night shift has it from here")
 end)
 
 function StartVehicleCheckLoop()
@@ -131,12 +132,21 @@ function DrawText2D(text, x, y)
     DrawText(x, y)
 end
 
-function Notify(msg)
-    if Config.NotificationSystem == "mythic" then
-        exports["mythic_notify"]:DoHudText("inform", msg)
+function Notify(msg, msgType)
+    msgType = msgType or "inform" -- fallback to 'inform' if no type is provided
+
+    if Config.NotificationSystem == "ox" then
+        lib.notify({
+            title = 'Duty Update',
+            description = msg,
+            type = msgType -- 'inform', 'success', 'error', 'warning'
+        })
+    elseif Config.NotificationSystem == "mythic" then
+        exports["mythic_notify"]:DoHudText(msgType, msg) -- Mythic types: 'inform', 'error', etc.
     else
         SetNotificationTextEntry("STRING")
         AddTextComponentString(msg)
         DrawNotification(false, true)
     end
 end
+
